@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        .title {
+            text-align: center;
+            margin-top: 100px;
+            font-size: 30px;
+            font-weight: bolder;
+        }
+
+        .input {
+            text-align: center;
+            font-size: 18px;
+            line-height: 18px;
+            height: 18px;
+            padding: 10px;
+
+        }
+
+        .todoList {
+            text-align: center;
+        }
+
+        ul {
+            list-style: none;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+<div id="app-2">
+    <div id="todoApp">
+        <div :class="titleStyle">Today Todo List</div>
+        <input-Component :class="inputStyle" @create="create"></input-Component>
+        <todo-list-component :class="todoListStyle" :todo-list="todoList" @remove="remove" @update="update"></todo-list-component>
+    </div>
+</div>
+</body>
+<script>
+    const inputComponent = {
+    	template :
+            '<div>' +
+                '<input type="text" v-model="todoText" placeholder="insert todo"/>' +
+                '<button @click="create">생성</button>' +
+            '</div>'
+        , data : function() {
+            return {
+                todoText : ''
+            }
+		}
+		, methods : {
+    		create : function () {
+    			if (!this.todoText) {
+    				return false;
+                }
+				this.$emit('create', this.todoText);
+    			this.todoText = '';
+            }
+        }
+    };
+
+	const todoListComponent = {
+		template :
+			'<div>' +
+			    '<ul>' +
+                    '<li v-for="(todo) in todoList" :key="todo.id">' +
+                        '<span v-if="todo.editable">' +
+                            '<input v-model="value"/>' +
+			                '<button @click="saveTodo(todo)">저장</button>' +
+                        '</span>' +
+			            '<span v-else>' +
+                            '<label>{{ todo.text }}</label>' +
+			                '<button @click="editTodo(todo)">수정</button>' +
+                        '</span>' +
+                        '<button @click="removeTodo(todo.id)">X</button>' +
+                    '</li>' +
+			    '</ul>' +
+			'</div>'
+		, data : function() {
+			return {
+				value : ''
+			}
+		}
+		, props: {
+			todoList : {
+				type: Array
+			}
+		}
+		, methods : {
+			removeTodo : function(id) {
+                this.$emit('remove', id);
+            }
+            , editTodo : function(todo) {
+				if (!todo) {
+					return false;
+				}
+				todo.editable = !todo.editable;
+				this.value = todo.text;
+            }
+            , saveTodo : function(todo) {
+				if (!todo) {
+					return false;
+				}
+				todo.editable = !todo.editable;
+				this.$emit('update', todo.id, this.value);
+            }
+		}
+	};
+
+    var todoApp = new Vue({
+        el: '#todoApp'
+        // 인스턴스에 지역 컴포넌트를 등록하면 인스턴스는 상위 컴포넌트,
+        // components에 등록된 컴포넌트들은 하위 컴포넌트들이 된다.
+       , components : {
+            inputComponent : inputComponent
+            ,todoListComponent: todoListComponent
+        }
+        , data: {
+			todoList: []
+            , id : 1
+            , titleStyle : {
+				title : true
+			}
+			, inputStyle : {
+				input : true
+            }
+            , todoListStyle : {
+				todoList : true
+            }
+        }
+        , methods : {
+			create : function(todoText) {
+				this.todoList.push({ id : this.id++, text : todoText, editable : false });
+            }
+            , remove : function (index) {
+				this.todoList.splice(index, 1);
+            }
+            , update : function (index, text) {
+				this.todoList[index].text = text;
+            }
+        }
+    });
+</script>
+</html>
