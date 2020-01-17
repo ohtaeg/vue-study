@@ -136,17 +136,12 @@
 				this.todoList.push({ id : this.id++, text : todoText, editable : false });
             }
             , remove : function (id) {
-				let index = this.findIndex(id);
-				this.todoList.splice(index, 1);
+				this.todoList = this.todoList.filter(todo => todo.id != id);
 			}
             , update : function (id, text) {
-				let index = this.findIndex(id);
-                this.todoList[index].text = text;
-            }
-            , findIndex : function(id) {
 				for (let i=0; i < this.todoList.length; i++) {
 					if (id === this.todoList[i].id) {
-						return i;
+						this.todoList[i].text = text;
 					}
 				}
             }
