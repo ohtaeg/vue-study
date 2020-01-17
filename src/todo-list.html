@@ -120,7 +120,7 @@
         }
         , data: {
 			todoList: []
-            , id : 1
+            , id : 0
             , titleStyle : {
 				title : true
 			}
@@ -135,11 +135,20 @@
 			create : function(todoText) {
 				this.todoList.push({ id : this.id++, text : todoText, editable : false });
             }
-            , remove : function (index) {
+            , remove : function (id) {
+				let index = this.findIndex(id);
 				this.todoList.splice(index, 1);
+			}
+            , update : function (id, text) {
+				let index = this.findIndex(id);
+                this.todoList[index].text = text;
             }
-            , update : function (index, text) {
-				this.todoList[index].text = text;
+            , findIndex : function(id) {
+				for (let i=0; i < this.todoList.length; i++) {
+					if (id === this.todoList[i].id) {
+						return i;
+					}
+				}
             }
         }
     });
