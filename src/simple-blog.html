@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Blog</title>
+    <style>
+        .content {
+            width : 700px;
+            text-align: center;
+        }
+        .table {
+            border-collapse: collapse;
+        }
+        tr, td {
+            border-bottom: 1px solid #000000;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+</head>
+<body>
+    <div id ="app">
+        <div class="content">
+            <h1>Blog</h1>
+            <list-component v-if="isList" :posts="posts" @show-editor="showEditor" @show-detail="showDetail"></list-component>
+            <form-component v-if="isEditable" @save="save" @cancel="cancel"></form-component>
+            <detail-component v-if="isDetail" @edit="edit" @show-list="showList" :post="post"></detail-component>
+        </div>
+    </div>
+</body>
+<script>
+    Date.prototype.format = function() {
+		return this.getFullYear() + '-' + ("0" + (this.getMonth() + 1)).slice(-2) + '-' + ("0" + this.getDate()).slice(-2) + ' ' + ("0" + this.getHours() + 1 ).slice(-2) + ':' + ("0" + this.getMinutes()).slice(-2) + ':' + ("0" + this.getSeconds()).slice(-2)
+    }
+	const posts = [
+		{
+			id : 0
+			,title : '안녕하세요'
+			,contents : '안녕하세요'
+			,registeredDate : '2020-01-18'
+		}
+		,{
+			id : 1
+			,title : '안녕하세요2'
+			,contents : '안녕하세요2'
+			,registeredDate : '2020-01-18'
+		}
+		,{
+			id : 2
+			,title : '안녕하세요3'
+			,contents : '안녕하세요3'
+			,registeredDate : '2020-01-18'
+		}
+	];
+
+    const listComponent = {
+    	template :
+			'<div>' +
+                '<table>' +
+                    '<thead>' +
+                        '<tr>' +
+                            '<th width="20%">No</th>' +
+			                '<th width="60%">Subject</th>' +
+		                    '<th width="20%">createAt</th>' +
+                        '</tr>' +
+                    '</thead>' +
+                    '<tbody v-for="(post, index) in posts" :key="post.id" @click="handleClickDetail(post.id)">' +
+                        '<tr>' +
+                            '<td>{{ index }}</td>' +
+                            '<td>{{ post.title }}</td>' +
+                            '<td>{{ post.registeredDate }}</td>' +
+                        '</tr>' +
+                    '</tbody>' +
+                '</table>' +
+			    '<div><button @click="handleClickWriteButton">작성하기</button></div>' +
+            '</div>'
+        , props : {
+    		posts : {
+    			type : Array
+            }
+        }
+		, methods: {
+			handleClickWriteButton () {
+				this.$emit('show-editor');
+			}
+			, handleClickDetail(postId) {
+				console.log(postId);
+				this.$emit('show-detail', postId);
+            }
+
+		}
+    };
+
+    const formComponent = {
+    	template:
+			'<div>' +
+		        '<div>' +
+		            '<label>제목</label>' +
+		            '<input v-model="post.title"/>' +
+		        '</div>' +
+		        '<div>' +
+		            '<label>내용</label>' +
+		            '<input v-model="post.contents"/>' +
+		        '</div>' +
+		        '<button @click="handleClickSave">저장</button>' +
+		        '<button @click="handleClickCancel">취소</button>' +
+		    '</div>'
+		, data () {
+    		return {
+    			id : 3
+    			, post : {
+    				title : ''
+                    , contents : ''
+                }
+            }
+        }
+        , methods : {
+			handleClickSave() {
+				let now = new Date();
+				this.$emit('save', { id : this.id++, ...this.post, registeredDate :  now.format()});
+				this.post = '';
+				this.contents = '';
+            }
+            , handleClickCancel() {
+				this.$emit('cancel');
+            }
+        }
+    };
+
+    const detailComponent = {
+		template :
+            '<div>' +
+	    	    '<div>' +
+	    	        '<label>제목</label>' +
+	                '{{ post.title }}' +
+	            '</div>' +
+	            '<div>' +
+	              '<label>내용</label>' +
+	              '{{ post.contents}}' +
+	            '</div>' +
+	    	    '<button @click="handleClickList">목록</button>' +
+	    	'</div>'
+        , props : {
+			post : {
+				 type : Object
+            }
+        }
+        , methods : {
+            handleClickList() {
+				this.$emit('show-list');
+            }
+        }
+    }
+
+    const app = new Vue({
+       el : '#app'
+        ,components : {
+			listComponent : listComponent
+            ,formComponent : formComponent
+            ,detailComponent : detailComponent
+        }
+       , data : {
+       	    posts : posts
+			, post : {
+       	    	id : 0
+                , title : ''
+				, contents : ''
+			}
+            , isEditable : false
+            , isDetail : false
+            , isList : true
+        }
+       , methods : {
+       	    showEditor () {
+       	    	this.isEditable = true;
+				this.isList = false;
+            }
+			, showDetail(postId) {
+       	    	this.post = this.posts.find(function(post) {
+       	    		return post.id == postId;
+                });
+				this.isDetail = true;
+				this.isList = false;
+			}
+			, showList() {
+				this.isDetail = false;
+				this.isList = true;
+			}
+			, cancel () {
+				this.isEditable = false;
+				this.isList = true;
+			}
+            , save (post) {
+				this.isEditable = false;
+				this.isList = true;
+                this.posts.push(post);
+            }
+			, edit() {
+				this.isEditable = true;
+       	    	this.isDetail = false;
+				this.isList = false;
+            }
+       }
+    });
+</script>
+</html>
